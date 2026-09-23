@@ -1,8 +1,8 @@
-import { automation, generate, t } from "automate.ax";
-import { gmail } from "automate.ax/gmail";
-import { linear } from "automate.ax/linear";
-import { slack } from "automate.ax/slack";
-import { z } from "zod";
+import { automation, generate, t } from "automate.ax"
+import { gmail } from "automate.ax/gmail"
+import { linear } from "automate.ax/linear"
+import { slack } from "automate.ax/slack"
+import { z } from "zod"
 
 export default automation(
   "Triage support email into Linear and Slack",
@@ -17,7 +17,7 @@ export default automation(
     ],
   },
   ({ parameters }) => {
-    const email = gmail.onNewEmail();
+    const email = gmail.onNewEmail()
     const message = email.transform(
       ({ from, messageId, subject, text, snippet }) => ({
         from: from?.address ?? "Unknown sender",
@@ -28,7 +28,7 @@ export default automation(
           6000,
         ),
       }),
-    );
+    )
 
     const triage = generate({
       instructions:
@@ -40,7 +40,7 @@ export default automation(
         category: z.enum(["bug", "billing", "how-to", "other"]),
         priority: z.enum(["urgent", "normal", "low"]),
       }),
-    }).output;
+    }).output
 
     const issue = linear.createIssue({
       teamId: parameters.linearTeamId,
@@ -49,12 +49,12 @@ export default automation(
         priority === "urgent" ? 1 : priority === "low" ? 4 : 3,
       ),
       description: t`**Category:** ${triage.category}\n**From:** ${message.from}\n**Subject:** ${message.subject}\n**Gmail message ID:** ${message.messageId}\n\n${triage.summary}`,
-    });
+    })
 
     slack.sendMessage({
       conversation: parameters.slackConversationId,
       text: t`New support issue: ${issue.url}\n${triage.summary}`,
       unfurlLinks: false,
-    });
+    })
   },
-);
+)
