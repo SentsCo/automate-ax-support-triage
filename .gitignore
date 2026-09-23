@@ -1,0 +1,3 @@
+node_modules/
+.automate/
+automate.config.ts
